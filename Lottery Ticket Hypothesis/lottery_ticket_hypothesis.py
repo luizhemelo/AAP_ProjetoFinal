@@ -1,4 +1,3 @@
-import numpy
 import tensorflow
 from tensorflow.keras import layers
 
@@ -7,7 +6,7 @@ tensorflow.config.experimental.set_memory_growth(devices[0], True)
 
 class PrunableDense(layers.Dense):
 	def __init__(self, *args, **kwargs):
-		super().__init__(*args, **kwargs)
+		super(PrunableDense, self).__init__(*args, **kwargs)
 		self.trainable_channels = None
 		self.trainable_bias = None
 		self._kernel1 = None
@@ -27,14 +26,16 @@ class PrunableDense(layers.Dense):
 
 	@property
 	def kernel(self):
-		return self.trainable_channels * self._kernel1 + (1 - self.trainable_channels * self._kernel2)
+		a = self.trainable_channels * self._kernel1 + (1 - self.trainable_channels * self._kernel2)
+		return a
 
 	@property
 	def bias(self):
 		if not self.use_bias:
 			return None
 		else:
-			return self.trainable_bias * self._bias1 + (1 - self.trainable_bias * self._bias2)
+			a = self.trainable_bias * self._bias1 + (1 - self.trainable_bias * self._bias2)
+			return a
 
 	def prune_kernel(self, to_be_pruned):
 		new_pruned = 1 - tensorflow.maximum((1 - to_be_pruned) - (1 - self.trainable_channels), 0)
