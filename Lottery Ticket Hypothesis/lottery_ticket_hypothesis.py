@@ -1,10 +1,8 @@
 import tensorflow
 from tensorflow.keras import layers
 
-devices = tensorflow.config.experimental.list_physical_devices("GPU")
-for i in devices:
+for i in tensorflow.config.experimental.list_physical_devices("GPU"):
 	tensorflow.config.experimental.set_memory_growth(i, True)
-#tensorflow.config.experimental.set_memory_growth(devices[0], True)
 
 class PrunableDense(layers.Dense):
 	"""
@@ -18,6 +16,8 @@ class PrunableDense(layers.Dense):
 		self._bias1 = None
 		self._kernel2 = None
 		self._bias2 = None
+		self.saved_W = None
+		self.saved_bias = None
 
 	def build(self, input_shape):
 		"""
@@ -34,6 +34,7 @@ class PrunableDense(layers.Dense):
 			self._bias1 = self.add_weight("bias", shape=(self.units,), initializer=self.bias_initializer, regularizer=self.bias_regularizer, constraint=self.bias_constraint, dtype=self.dtype, trainable=True)
 			self._bias2 = tensorflow.zeros((self.units,))
 			self.trainable_bias = tensorflow.ones((self.units,))
+		self.built = True
 
 	@property
 	def kernel(self):
@@ -52,12 +53,26 @@ class PrunableDense(layers.Dense):
 		else:
 			return self.trainable_bias * self._bias1 + (1 - self.trainable_bias) * self._bias2
 
+	def save_kernel(self):
+		self.saved_W = tensorflow.identity(self.kernel)
+
+	def restore_kernel(self):
+		self._kernel1.assign(self.saved_W)
+
+	def save_bias(self):
+		assert (self.use_bias)
+		self.saved_bias = tensorflow.identity(self.bias)
+
+	def restore_bias(self):
+		assert (self.use_bias)
+		self._bias1.assign(self.saved_bias)
+
 	def prune_kernel(self, to_be_pruned):
 		"""
 		Prune the network layer on specific weights.
 		Parameters
 		---------------
-		to_be_pruned: NumPy Array or Tensor of shape=kernel.shape
+		to_be_pruned: NumPy Array or Tensor of shape=kernel.shape with values in {0,  1} indicating which weights to keep and which to drop.
 		"""
 		new_pruned = 1 - tensorflow.maximum((1 - to_be_pruned) - (1 - self.trainable_channels), 0)
 		new_pruned_weights = (1 - new_pruned) * self._kernel1
@@ -69,7 +84,7 @@ class PrunableDense(layers.Dense):
 		Prune the bias on specific weights.
 		Parameters
 		--------------
-		to_be_pruned: NumPy Array or Tensor with shape=kernel.shape
+		to_be_pruned: NumPy Array or Tensor with shape=kernel.shape with values in {0,  1} indicating which weights to keep and which to drop.
 		"""
 		assert (self.use_bias)
 		new_pruned = 1 - tensorflow.maximum((1 - to_be_pruned) - (1 - self.trainable_bias), 0)
