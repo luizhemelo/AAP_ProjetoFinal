@@ -45,7 +45,7 @@ print("Loss:", loss)
 print("Accuracy:", accuracy)
 
 #Creating list of weights, saving weight value and index
-#TODO: optimize?
+#TODO optimize?
 l = []
 for i in range(len(nn.layers)):
 	t1, t2 = nn.layers[i].kernel, nn.layers[i].bias
@@ -56,7 +56,7 @@ for i in range(len(nn.layers)):
 		l.append((t2[j], i, j))
 
 #Sorting weights for pruning
-#TODO: change p to p**(1/n)
+#TODO change p to p**(1/n)
 s = sorted(l, key=lambda x: x[0])
 p = int(numpy.floor((9. / 10.) * len(s)))
 s = s[:p]
@@ -75,6 +75,7 @@ for i in s:
 		to_prune_dict_bias[i[1]].append(i[2])
 
 #Creating pruning Tensor for pruning weights and pruning each layer
+#TODO optimize
 for i in to_prune_dict_kernel.keys():
 	t = tensorflow.Variable(numpy.ones(nn.layers[i].kernel.shape))
 	for j in to_prune_dict_kernel[i]:
@@ -82,6 +83,7 @@ for i in to_prune_dict_kernel.keys():
 	nn.layers[i].prune_kernel(t)
 
 #Creating pruning Tesor for bias and pruning each layer
+#TODO optimize
 for i in to_prune_dict_bias.keys():
 	t = tensorflow.Variable(numpy.ones(nn.layers[i].bias.shape))
 	for j in to_prune_dict_bias[i]:
