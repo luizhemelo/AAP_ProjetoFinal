@@ -83,6 +83,7 @@ class PrunableDense(layers.Dense):
 		to_be_pruned: NumPy Array or Tensor with shape=kernel.shape with values in {0,  1} indicating which weights to keep (1) and which to drop (0).
 		"""
 		assert (self.use_bias)
+		
 		t = tensorflow.cast(to_be_pruned, dtype=tensorflow.float32)
 		new_pruned = 1 - tensorflow.maximum((1 - t) - (1 - tensorflow.cast(self.trainable_bias, dtype=tensorflow.float32)), 0)
 		new_pruned_bias = (1 - new_pruned) * self._bias1
