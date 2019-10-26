@@ -5,8 +5,8 @@ from lottery_ticket_hypothesis import PrunableDense
 from tensorflow import optimizers, initializers, losses
 from tensorflow.keras import models, layers, activations
 
-devices = tensorflow.config.experimental.list_physical_devices("GPU")
-tensorflow.config.experimental.set_memory_growth(devices[0], True)
+# devices = tensorflow.config.experimental.list_physical_devices("GPU")
+# tensorflow.config.experimental.set_memory_growth(devices[0], True)
 
 def create_neural_network_prunable():
 	"""Prunable model of a fully-conected multilayer perceptron"""
