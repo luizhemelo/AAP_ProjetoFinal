@@ -79,7 +79,7 @@ for i in nn.layers:
 	i.restore_bias()
 
 print("After pruning:")
-nn.fit(x_train, y_train, epochs=10, batch_size=32, validation_data=(x_train, y_train))
+nn.fit(x_train, y_train, epochs=10, batch_size=64, validation_data=(x_train, y_train))
 loss, accuracy = nn.evaluate(x_test, y_test, verbose=0)
 print("Loss:", loss)
 print("Accuracy:", accuracy)
