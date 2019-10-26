@@ -49,7 +49,7 @@ for i in range(len(nn.layers)):
 		for k in range(t1[j].shape[0]):
 			l.append((t1[j][k].numpy(), i, j, k))
 	for j in range(t2.shape[0]):
-		l.append((t2[j], j))
+		l.append((t2[j], i, j))
 
 s = sorted(l, key=lambda x: x[0])
 p = int(numpy.floor((9. / 10.) * len(s)))
@@ -64,7 +64,7 @@ for i in s:
 	if len(i) > 2:
 		to_prune_dict_kernel[i[1]].append(i[2:])
 	else:
-		to_prune_dict_bias[i].append(i[2])
+		to_prune_dict_bias[i[1]].append(i[2])
 
 for i in to_prune_dict_kernel.keys():
 	t = tensorflow.Variable(numpy.ones(nn.layers[i].kernel.shape))
