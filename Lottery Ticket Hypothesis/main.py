@@ -53,6 +53,7 @@ for i in range(len(nn.layers)):
 s = sorted(l, key=lambda x: x[0])
 p = int(numpy.floor((9. / 10.) * len(s)))
 s = s[:p]
+del l
 
 to_prune_dict = {}
 to_prune_dict_kernel, to_prune_dict_bias = {}, {}
