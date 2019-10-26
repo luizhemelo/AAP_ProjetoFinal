@@ -8,6 +8,8 @@ from tensorflow.keras import models, layers, activations
 try:
 	devices = tensorflow.config.experimental.list_physical_devices("GPU")
 	tensorflow.config.experimental.set_memory_growth(devices[0], True)
+except:
+	print("Device config failed!")
 
 def create_neural_network_prunable():
 	"""Prunable model of a fully-conected multilayer perceptron"""
