@@ -41,7 +41,6 @@ loss, accuracy = nn.evaluate(x_test, y_test, verbose=0)
 print("Loss:", loss)
 print("Accuracy:", accuracy)
 
-print("After pruning:")
 l = []
 for i in range(len(nn.layers)):
 	t1, t2 = nn.layers[i].kernel, nn.layers[i].bias
@@ -82,6 +81,7 @@ for i in nn.layers:
 	i.restore_kernel()
 	i.restore_bias()
 
+print("After pruning:")
 nn.fit(x_train, y_train, epochs=10, batch_size=64, validation_data=(x_train, y_train))
 loss, accuracy = nn.evaluate(x_test, y_test, verbose=0)
 print("Loss:", loss)
