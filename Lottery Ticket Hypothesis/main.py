@@ -5,8 +5,8 @@ from lottery_ticket_hypothesis import PrunableDense
 from tensorflow import optimizers, initializers, losses
 from tensorflow.keras import models, layers, activations
 
-devices = tensorflow.config.experimental.list_physical_devices("GPU")
-tensorflow.config.experimental.set_memory_growth(devices[0], True)
+# devices = tensorflow.config.experimental.list_physical_devices("GPU")
+# tensorflow.config.experimental.set_memory_growth(devices[0], True)
 
 def create_neural_network_prunable():
 	"""Prunable model of a fully-conected multilayer perceptron"""
@@ -38,6 +38,7 @@ loss, accuracy = nn.evaluate(x_test, y_test, verbose=0)
 print("Loss:", loss)
 print("Accuracy:", accuracy)
 
+print("After pruning:")
 l = []
 for i in range(len(nn.layers)):
 	t1, t2 = nn.layers[i].kernel, nn.layers[i].bias
@@ -78,7 +79,6 @@ for i in nn.layers:
 	i.restore_kernel()
 	i.restore_bias()
 
-print("After pruning:")
 nn.fit(x_train, y_train, epochs=10, batch_size=64, validation_data=(x_train, y_train))
 loss, accuracy = nn.evaluate(x_test, y_test, verbose=0)
 print("Loss:", loss)
