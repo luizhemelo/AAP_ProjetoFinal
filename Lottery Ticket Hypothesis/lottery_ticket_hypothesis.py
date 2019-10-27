@@ -1,8 +1,12 @@
 import tensorflow
 from tensorflow.keras import layers
 
-for i in tensorflow.config.experimental.list_physical_devices("GPU"):
-	tensorflow.config.experimental.set_memory_growth(i, True)
+#Tries to enable dynamic memory allocation on GPUs
+try:
+	for i in tensorflow.config.experimental.list_physical_devices("GPU"):
+		tensorflow.config.experimental.set_memory_growth(i, True)
+except:
+	print("Device dynamic memory allocation failed!")
 
 class PrunableDense(layers.Dense):
 	"""
