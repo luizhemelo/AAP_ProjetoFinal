@@ -13,7 +13,7 @@ except:
 	print("Device dynamic memory allocation failed!")
 
 def create_neural_network_prunable():
-	"""Prunable model of a fully-conected multilayer perceptron"""
+	"""Prunable model of a fully-connected multilayer perceptron"""
 	net = models.Sequential()
 	net.add(PrunableDense(256, activation=activations.softsign, name="Dense0", bias_initializer=tensorflow.ones, kernel_initializer=initializers.he_normal()))
 	net.add(PrunableDense(128, activation=activations.softsign, name="Dense1", bias_initializer=tensorflow.ones, kernel_initializer=initializers.he_normal()))
@@ -22,7 +22,7 @@ def create_neural_network_prunable():
 	net.add(PrunableDense(1, activation=activations.tanh, name="Output", bias_initializer=tensorflow.ones, kernel_initializer=initializers.he_normal()))
 	return net
 
-#Data reading and train/test saparation
+#Data reading and train/test separation
 X = numpy.loadtxt("poco_1.prn", skiprows=11, usecols=(1, 2, 3, 4, 5, 6, 7), dtype=numpy.float32)
 y_str = numpy.loadtxt("poco_1.prn", skiprows=11, usecols=8, dtype=numpy.str)
 label_encoder = preprocessing.LabelEncoder()
@@ -59,9 +59,9 @@ for i in range(len(nn.layers)):
 #Sorting weights for pruning
 #TODO change p to p**(1/n)
 s = sorted(l, key=lambda x: x[0])
+del l
 p = int(numpy.floor((9. / 10.) * len(s)))
 s = s[:p]
-del l
 
 #Creating dictionaries for separating weights and bias by layer
 to_prune_dict_kernel, to_prune_dict_bias = {}, {}
@@ -73,6 +73,7 @@ for i in s:
 		to_prune_dict_kernel[i[1]].append(i[2:])
 	else:
 		to_prune_dict_bias[i[1]].append(i[2])
+del s
 
 #Creating pruning Tensor for pruning weights and pruning each layer
 for i in to_prune_dict_kernel.keys():
@@ -84,7 +85,7 @@ for i in to_prune_dict_kernel.keys():
 	if tensorflow.math.reduce_any(t == 0):
 		nn.layers[i].prune_kernel(t)
 
-#Creating pruning Tnesor for bias and pruning each layer
+#Creating pruning Tensor for bias and pruning each layer
 for i in to_prune_dict_bias.keys():
 	if not to_prune_dict_bias[i]:
 		continue
@@ -93,6 +94,7 @@ for i in to_prune_dict_bias.keys():
 	t = tensorflow.tensor_scatter_nd_update(v, to_prune_dict_bias[i], u)
 	if tensorflow.math.reduce_any(t == 0):
 		nn.layers[i].prune_bias(t)
+del to_prune_dict_bias, to_prune_dict_kernel
 
 #Restoring initial values
 for i in nn.layers:
