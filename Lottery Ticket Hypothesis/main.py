@@ -2,9 +2,10 @@ import numpy
 import tensorflow
 from sklearn import preprocessing, model_selection
 from lottery_ticket_hypothesis import PrunableDense
-from tensorflow import optimizers, initializers, losses
+from tensorflow import optimizers, initializers, losses, metrics
 from tensorflow.keras import models, layers, activations
 
+#Tries no enable dynamic memory allocation on GPUs
 try:
 	devices = tensorflow.config.experimental.list_physical_devices("GPU")
 	tensorflow.config.experimental.set_memory_growth(devices[0], True)
@@ -37,7 +38,7 @@ for i in nn.layers:
 	i.save_kernel()
 	i.save_bias()
 nn.summary()
-nn.compile(optimizer=optimizers.Adam(learning_rate=0.0001), loss=losses.BinaryCrossentropy(), metrics=["accuracy"])
+nn.compile(optimizer=optimizers.Adam(learning_rate=0.0001), loss=losses.BinaryCrossentropy(), metrics=[metrics.BinaryAccuracy()])
 print("Before pruning:")
 nn.fit(x_train, y_train, epochs=10, batch_size=64, validation_data=(x_train, y_train))
 loss, accuracy = nn.evaluate(x_test, y_test, verbose=0)
