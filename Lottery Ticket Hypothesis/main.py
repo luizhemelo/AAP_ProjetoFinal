@@ -2,24 +2,24 @@ import numpy
 import tensorflow
 from sklearn import preprocessing, model_selection
 from lottery_ticket_hypothesis import PrunableDense
+from tensorflow.keras import models, layers
 from tensorflow import optimizers, initializers, losses, metrics
-from tensorflow.keras import models, layers, activations
 
-#Tries no enable dynamic memory allocation on GPUs
+#Tries to enable dynamic memory allocation on GPUs
 try:
-	devices = tensorflow.config.experimental.list_physical_devices("GPU")
-	tensorflow.config.experimental.set_memory_growth(devices[0], True)
+	for i in tensorflow.config.experimental.list_physical_devices("GPU"):
+		tensorflow.config.experimental.set_memory_growth(i, True)
 except:
-	print("Device config failed!")
+	print("Device dynamic memory allocation failed!")
 
 def create_neural_network_prunable():
 	"""Prunable model of a fully-conected multilayer perceptron"""
 	net = models.Sequential()
-	net.add(PrunableDense(256, activation=activations.softsign, name="Dense0", bias_initializer=tensorflow.ones, kernel_initializer=initializers.he_normal()))
-	net.add(PrunableDense(128, activation=activations.softsign, name="Dense1", bias_initializer=tensorflow.ones, kernel_initializer=initializers.he_normal()))
-	net.add(PrunableDense(64, activation=activations.softsign, name="Dense2", bias_initializer=tensorflow.ones, kernel_initializer=initializers.he_normal()))
-	net.add(PrunableDense(32, activation=activations.softsign, name="Dense3", bias_initializer=tensorflow.ones, kernel_initializer=initializers.he_normal()))
-	net.add(PrunableDense(1, activation=activations.tanh, name="Output", bias_initializer=tensorflow.ones, kernel_initializer=initializers.he_normal()))
+	net.add(PrunableDense(256, activation=tensorflow.math.softsign, name="Dense0", bias_initializer=tensorflow.ones, kernel_initializer=initializers.he_normal()))
+	net.add(PrunableDense(128, activation=tensorflow.math.softsign, name="Dense1", bias_initializer=tensorflow.ones, kernel_initializer=initializers.he_normal()))
+	net.add(PrunableDense(64, activation=tensorflow.math.softsign, name="Dense2", bias_initializer=tensorflow.ones, kernel_initializer=initializers.he_normal()))
+	net.add(PrunableDense(32, activation=tensorflow.math.softsign, name="Dense3", bias_initializer=tensorflow.ones, kernel_initializer=initializers.he_normal()))
+	net.add(PrunableDense(1, activation=tensorflow.math.tanh, name="Output", bias_initializer=tensorflow.ones, kernel_initializer=initializers.he_normal()))
 	return net
 
 #Data reading and train/test saparation
