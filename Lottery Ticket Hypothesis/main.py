@@ -2,7 +2,7 @@ import numpy
 import tensorflow
 from sklearn import preprocessing, model_selection
 from lottery_ticket_hypothesis import PrunableDense
-from tensorflow.keras import models, layers
+from tensorflow.keras import models, layers, activations
 from tensorflow import optimizers, initializers, losses, metrics
 
 #Tries to enable dynamic memory allocation on GPUs
@@ -15,11 +15,11 @@ except:
 def create_neural_network_prunable():
 	"""Prunable model of a fully-conected multilayer perceptron"""
 	net = models.Sequential()
-	net.add(PrunableDense(256, activation=tensorflow.math.softsign, name="Dense0", bias_initializer=tensorflow.ones, kernel_initializer=initializers.he_normal()))
-	net.add(PrunableDense(128, activation=tensorflow.math.softsign, name="Dense1", bias_initializer=tensorflow.ones, kernel_initializer=initializers.he_normal()))
-	net.add(PrunableDense(64, activation=tensorflow.math.softsign, name="Dense2", bias_initializer=tensorflow.ones, kernel_initializer=initializers.he_normal()))
-	net.add(PrunableDense(32, activation=tensorflow.math.softsign, name="Dense3", bias_initializer=tensorflow.ones, kernel_initializer=initializers.he_normal()))
-	net.add(PrunableDense(1, activation=tensorflow.math.tanh, name="Output", bias_initializer=tensorflow.ones, kernel_initializer=initializers.he_normal()))
+	net.add(PrunableDense(256, activation=activations.softsign, name="Dense0", bias_initializer=tensorflow.ones, kernel_initializer=initializers.he_normal()))
+	net.add(PrunableDense(128, activation=activations.softsign, name="Dense1", bias_initializer=tensorflow.ones, kernel_initializer=initializers.he_normal()))
+	net.add(PrunableDense(64, activation=activations.softsign, name="Dense2", bias_initializer=tensorflow.ones, kernel_initializer=initializers.he_normal()))
+	net.add(PrunableDense(32, activation=activations.softsign, name="Dense3", bias_initializer=tensorflow.ones, kernel_initializer=initializers.he_normal()))
+	net.add(PrunableDense(1, activation=activations.tanh, name="Output", bias_initializer=tensorflow.ones, kernel_initializer=initializers.he_normal()))
 	return net
 
 #Data reading and train/test saparation
@@ -54,7 +54,7 @@ for i in range(len(nn.layers)):
 		for k in range(t1[j].shape[0]):
 			l.append((t1[j][k].numpy(), i, j, k))
 	for j in range(t2.shape[0]):
-		l.append((t2[j], i, j))
+		l.append((t2[j].numpy(), i, j))
 
 #Sorting weights for pruning
 #TODO change p to p**(1/n)
@@ -64,32 +64,35 @@ s = s[:p]
 del l
 
 #Creating dictionaries for separating weights and bias by layer
-to_prune_dict = {}
 to_prune_dict_kernel, to_prune_dict_bias = {}, {}
 for i in range(len(nn.layers)):
 	to_prune_dict_kernel[i] = []
 	to_prune_dict_bias[i] = []
 for i in s:
-	if len(i) > 2:
+	if len(i) > 3:
 		to_prune_dict_kernel[i[1]].append(i[2:])
 	else:
 		to_prune_dict_bias[i[1]].append(i[2])
 
 #Creating pruning Tensor for pruning weights and pruning each layer
-#TODO optimize
 for i in to_prune_dict_kernel.keys():
-	t = tensorflow.Variable(numpy.ones(nn.layers[i].kernel.shape))
-	for j in to_prune_dict_kernel[i]:
-		t[j[0], j[1]].assign(0)
-	nn.layers[i].prune_kernel(t)
+	if not to_prune_dict_kernel[i]:
+		continue
+	v = tensorflow.Variable(numpy.ones(nn.layers[i].kernel.shape))
+	u = tensorflow.Variable(numpy.zeros(len(to_prune_dict_kernel[i])))
+	t = tensorflow.tensor_scatter_nd_update(v, to_prune_dict_kernel[i], u)
+	if tensorflow.math.reduce_any(t == 0):
+		nn.layers[i].prune_kernel(t)
 
-#Creating pruning Tesor for bias and pruning each layer
-#TODO optimize
+#Creating pruning Tnesor for bias and pruning each layer
 for i in to_prune_dict_bias.keys():
-	t = tensorflow.Variable(numpy.ones(nn.layers[i].bias.shape))
-	for j in to_prune_dict_bias[i]:
-		t[j].assign(0)
-	nn.layers[i].prune_bias(t)
+	if not to_prune_dict_bias[i]:
+		continue
+	v = tensorflow.Variable(numpy.ones(nn.layers[i].bias.shape))
+	u = tensorflow.Variable(numpy.zeros(len(to_prune_dict_bias[i])))
+	t = tensorflow.tensor_scatter_nd_update(v, to_prune_dict_bias[i], u)
+	if tensorflow.math.reduce_any(t == 0):
+		nn.layers[i].prune_bias(t)
 
 #Restoring initial values
 for i in nn.layers:
@@ -110,6 +113,7 @@ for i in nn.layers:
 	t.assign_add(j)
 	print(i.name, ":", j)
 print("Active edges:", t.numpy())
+print()
 
 #Printing disabled edges
 t.assign(0)
