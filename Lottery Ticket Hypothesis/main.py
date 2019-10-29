@@ -79,8 +79,8 @@ del s
 for i in to_prune_dict_kernel.keys():
 	if not to_prune_dict_kernel[i]:
 		continue
-	v = tensorflow.Variable(numpy.ones(nn.layers[i].kernel.shape))
-	u = tensorflow.Variable(numpy.zeros(len(to_prune_dict_kernel[i])))
+	v = tensorflow.Variable(tensorflow.ones(nn.layers[i].kernel.shape))
+	u = tensorflow.Variable(tensorflow.zeros(len(to_prune_dict_kernel[i])))
 	t = tensorflow.tensor_scatter_nd_update(v, to_prune_dict_kernel[i], u)
 	if tensorflow.math.reduce_any(t == 0):
 		nn.layers[i].prune_kernel(t)
@@ -89,8 +89,8 @@ for i in to_prune_dict_kernel.keys():
 for i in to_prune_dict_bias.keys():
 	if not to_prune_dict_bias[i]:
 		continue
-	v = tensorflow.Variable(numpy.ones(nn.layers[i].bias.shape))
-	u = tensorflow.Variable(numpy.zeros(len(to_prune_dict_bias[i])))
+	v = tensorflow.Variable(tensorflow.ones(nn.layers[i].bias.shape))
+	u = tensorflow.Variable(tensorflow.zeros(len(to_prune_dict_bias[i])))
 	t = tensorflow.tensor_scatter_nd_update(v, to_prune_dict_bias[i], u)
 	if tensorflow.math.reduce_any(t == 0):
 		nn.layers[i].prune_bias(t)
