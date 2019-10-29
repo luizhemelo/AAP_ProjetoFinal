@@ -109,18 +109,20 @@ print("Loss:", loss)
 print("Accuracy:", accuracy)
 
 #Printing active edges
+print("Active edges:")
 t = tensorflow.Variable(0, dtype=tensorflow.int64)
 for i in nn.layers:
 	j = tensorflow.math.count_nonzero(i.trainable_channels)
 	t.assign_add(j)
 	print(i.name, ":", j)
-print("Active edges:", t.numpy())
+print("Total:", t.numpy())
 print()
 
 #Printing disabled edges
 t.assign(0)
+print("Disabled edges:")
 for i in nn.layers:
 	j = tensorflow.reduce_sum(tensorflow.cast((i.trainable_channels == 0), dtype=tensorflow.int64))
 	t.assign_add(j)
 	print(i.name, ":", j)
-print("Disabled edges:", t.numpy())
+print("Total:", t.numpy())
