@@ -8,9 +8,9 @@ import tensorflow
 from matplotlib import ticker
 from matplotlib import pyplot
 from sklearn import model_selection
+from tensorflow.keras import preprocessing, utils
 from transformer import Encoder, Decoder, BahdanauAttention
 from tensorflow import losses, optimizers, initializers, train
-from tensorflow.keras import preprocessing, utils
 
 def unicode_to_ascii(s):
 		return ''.join(c for c in unicodedata.normalize('NFD', s)
