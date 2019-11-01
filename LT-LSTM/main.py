@@ -140,9 +140,10 @@ def loss_function(real, pred):
 	loss_ *= mask
 	return tensorflow.reduce_mean(loss_)
 
+optimizer = optimizers.Adam()
 checkpoint_dir = "./training_checkpoints"
 checkpoint_prefix = os.path.join(checkpoint_dir, "ckpt")
-checkpoint = train.Checkpoint(optimizer=optimizers.Adam(),encoder=encoder,decoder=decoder)
+checkpoint = train.Checkpoint(optimizer=optimizer,encoder=encoder,decoder=decoder)
 
 @tensorflow.function
 def train_step(inp, targ, enc_hidden):
