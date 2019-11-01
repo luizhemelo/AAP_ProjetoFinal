@@ -1,6 +1,12 @@
 import tensorflow
 from tensorflow.keras import models, layers
 
+try:
+	for device in tensorflow.config.experimental.list_physical_devices("GPU"):
+		tensorflow.config.experimental.set_memory_growth(device, True)
+except:
+	print("Failed on enabling dynamic memory allocation on GPU devices!")
+
 class Encoder(models.Model):
 	def __init__(self, vocab_size, embedding_dim, enc_units, batch_sz):
 		super(Encoder, self).__init__()

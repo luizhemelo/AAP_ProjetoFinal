@@ -12,6 +12,12 @@ from tensorflow.keras import preprocessing, utils
 from transformer import Encoder, Decoder, BahdanauAttention
 from tensorflow import losses, optimizers, initializers, train
 
+try:
+	for device in tensorflow.config.experimental.list_physical_devices("GPU"):
+		tensorflow.config.experimental.set_memory_growth(device, True)
+except:
+	print("Failed on enabling dynamic memory allocation on GPU devices!")
+
 def unicode_to_ascii(s):
 		return ''.join(c for c in unicodedata.normalize('NFD', s)
 				if unicodedata.category(c) != 'Mn')
