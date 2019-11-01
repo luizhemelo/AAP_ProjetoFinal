@@ -3,8 +3,8 @@ import os
 import io
 import time
 import numpy
-import unicodedata
 import tensorflow
+import unicodedata
 from matplotlib import pyplot
 from matplotlib import ticker
 from sklearn import model_selection
@@ -233,6 +233,6 @@ def translate(sentence):
 
 translate(u"hace mucho frio aqui.")
 translate(u"esta es mi vida.")
-translate(u"¿todavia estan en casa?")
+translate(u"Â¿todavia estan en casa?")
 # wrong translation
 translate(u"trata de averiguarlo.")
