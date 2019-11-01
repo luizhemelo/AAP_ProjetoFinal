@@ -189,4 +189,19 @@ class PrunnableLSTMCell(layers.LSTMCell):
             if training is None:
                 h._uses_learning_phase = True
         return h, [h, c]
-        
+
+    @property
+	def kernel(self):
+		"""
+		Custom kernel property that returns only trainable channels.
+		"""
+		t = tensorflow.cast(self.trainable_channels, dtype=self.dtype)
+		return t * self._kernel1 + (1 - t) * self._kernel2
+
+	@property
+	def recurrent_kernel(self):
+		"""
+		Custom kernel property that returns only trainable channels.
+		"""
+		t = tensorflow.cast(self.trainable_recurrent_channels, dtype=self.dtype)
+		return t * self._recurrent_kernel1 + (1 - t) * self._recurrent_kernel2
