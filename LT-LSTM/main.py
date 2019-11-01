@@ -1,6 +1,6 @@
-import re
-import os
 import io
+import os
+import re
 import time
 import numpy
 import tensorflow
@@ -19,8 +19,7 @@ except:
 	print("Failed on enabling dynamic memory allocation on GPU devices!")
 
 def unicode_to_ascii(s):
-		return ''.join(c for c in unicodedata.normalize("NFD", s)
-				if unicodedata.category(c) != "Mn")
+		return ''.join(c for c in unicodedata.normalize("NFD", s) if unicodedata.category(c) != "Mn")
 
 def preprocess_sentence(w):
 		w = unicode_to_ascii(w.lower().strip())
