@@ -5,6 +5,7 @@ from lottery_ticket_hypothesis import PrunableDense
 from tensorflow.keras import models, layers, activations
 from tensorflow import optimizers, initializers, losses, metrics
 
+
 #Tries to enable dynamic memory allocation on GPUs
 try:
 	for i in tensorflow.config.experimental.list_physical_devices("GPU"):
