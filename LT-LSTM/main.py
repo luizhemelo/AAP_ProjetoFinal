@@ -19,8 +19,8 @@ except:
 	print("Failed on enabling dynamic memory allocation on GPU devices!")
 
 def unicode_to_ascii(s):
-		return ''.join(c for c in unicodedata.normalize('NFD', s)
-				if unicodedata.category(c) != 'Mn')
+		return ''.join(c for c in unicodedata.normalize("NFD", s)
+				if unicodedata.category(c) != "Mn")
 
 def preprocess_sentence(w):
 		w = unicode_to_ascii(w.lower().strip())
@@ -37,7 +37,7 @@ def preprocess_sentence(w):
 en_sentence = u"Excuse me, may I borrow this book of Willian Shakespeare?"
 pt_sentence = u"Ol√°, posso pegar emprestado esse livro de Willian Shakespeare?"
 print(preprocess_sentence(en_sentence))
-print(preprocess_sentence(pt_sentence).encode('utf-8'))
+print(preprocess_sentence(pt_sentence).encode("utf-8"))
 
 # 1. Remove the accents
 # 2. Clean the sentences
@@ -197,7 +197,7 @@ def evaluate(sentence):
 		enc_out, enc_hidden = encoder(inputs, hidden)
 
 		dec_hidden = enc_hidden
-		dec_input = tensorflow.expand_dims([targ_lang.word_index['<start>']], 0)
+		dec_input = tensorflow.expand_dims([targ_lang.word_index["<start>"]], 0)
 
 		for t in range(max_length_targ):
 				predictions, dec_hidden, attention_weights = decoder(dec_input, dec_hidden, enc_out)
@@ -231,3 +231,8 @@ def translate(sentence):
 		attention_plot = attention_plot[:len(result.split(' ')), :len(sentence.split(' '))]
 		plot_attention(attention_plot, sentence.split(' '), result.split(' '))
 
+translate(u"hace mucho frio aqui.")
+translate(u"esta es mi vida.")
+translate(u"øtodavia estan en casa?")
+# wrong translation
+translate(u"trata de averiguarlo.")
