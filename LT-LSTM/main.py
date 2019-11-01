@@ -5,8 +5,8 @@ import time
 import numpy
 import unicodedata
 import tensorflow
-from matplotlib import ticker
 from matplotlib import pyplot
+from matplotlib import ticker
 from sklearn import model_selection
 from tensorflow.keras import preprocessing, utils
 from transformer import Encoder, Decoder, BahdanauAttention
