@@ -19,6 +19,9 @@ class CustomLSTMCell(layers.LSTMCell):
 		self.trainable_channels = None
 		self.trainable_bias = None
 		self.trainable_recurrent_channels = None
+        self.saved_W = None
+        self.saved_bias = None
+        self.saved_recW = None
 
 	def build(self, input_shape):
 		self._kernel1 = self.add_weight("kernel1", shape=(input_shape[-1], 4 * self.units), initializer=self.kernel_initializer, regularizer=self.kernel_regularizer, constraint=self.kernel_constraint, dtype=self.dtype, trainable=True)
