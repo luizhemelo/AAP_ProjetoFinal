@@ -115,4 +115,4 @@ class CustomLSTMCell(layers.LSTMCell):
 class CustomLSTM(layers.LSTM):
 	def __init__(self, *args, **kwargs):
 	 super(CustomLSTM, self).__init__(*args, **kwargs)
-	 self.cell = CustomLSTMCell(*args, **kwargs)
+	 self.cell = CustomLSTMCell(units=self.units, activation=self.activation, recurrent_activation=self.recurrent_activation, use_bias=self.use_bias, kernel_initializer=self.kernel_initializer, recurrent_initializer=self.recurrent_initializer, bias_initializer=self.bias_initializer, unit_forget_bias=self.unit_forget_bias, kernel_regularizer=self.kernel_regularizer, recurrent_regularizer=self.recurrent_regularizer, bias_regularizer=self.bias_regularizer, kernel_constraint=self.kernel_constraint, recurrent_constraint=self.recurrent_constraint, bias_constraint=self.bias_constraint, dropout=self.dropout, recurrent_dropout=self.recurrent_dropout, implementation=self.implementation)
