@@ -19,9 +19,9 @@ class CustomLSTMCell(layers.LSTMCell):
 		self.trainable_channels = None
 		self.trainable_bias = None
 		self.trainable_recurrent_channels = None
-        self.saved_W = None
-        self.saved_bias = None
-        self.saved_recW = None
+		self.saved_W = None
+		self.saved_bias = None
+		self.saved_recW = None
 
 	def build(self, input_shape):
 		self._kernel1 = self.add_weight("kernel1", shape=(input_shape[-1], 4 * self.units), initializer=self.kernel_initializer, regularizer=self.kernel_regularizer, constraint=self.kernel_constraint, dtype=self.dtype, trainable=True)
@@ -51,66 +51,66 @@ class CustomLSTMCell(layers.LSTMCell):
 		else:
 			return self.trainable_bias * self._bias1 + (1 - self.trainable_bias) * self._bias2
 
-    def save_kernel(self):
-        self.saved_W = tf.identity(self.kernel)
+	def save_kernel(self):
+		self.saved_W = tensorflow.identity(self.kernel)
 
-    def save_recurrent_kernel(self):
-        self.saved_recW = tf.identity(self.recurrent_kernel)
+	def save_recurrent_kernel(self):
+		self.saved_recW = tensorflow.identity(self.recurrent_kernel)
 
-    def save_bias(self):
-        assert (self.use_bias)
-        self.saved_bias = tf.identity(self.bias)
+	def save_bias(self):
+		assert (self.use_bias)
+		self.saved_bias = tensorflow.identity(self.bias)
 
-    def restore_kernel(self):
-        self._kernel1.assign(self.saved_W)
+	def restore_kernel(self):
+		self._kernel1.assign(self.saved_W)
 
-    def restore_recurrent_kernel(self):
-        self._recurrent_kernel1.assign(self.saved_recW)
+	def restore_recurrent_kernel(self):
+		self._recurrent_kernel1.assign(self.saved_recW)
 
-    def restore_bias(self):
-        self._bias1.assign(self.saved_bias)
+	def restore_bias(self):
+		self._bias1.assign(self.saved_bias)
 
-    def prune_kernel(self, to_be_pruned):
-        """
-        Prune the network layer on specific weights.
-        Parameters
-        ---------------
-        to_be_pruned: NumPy Array or Tensor of shape=kernel.shape with values in {0,  1} indicating which weights
-        to keep (1) and which to drop (0).
-        """
-        t = tf.cast(to_be_pruned, dtype=tf.float32)
-        new_pruned = 1 - tf.maximum((1 - t) - (1 - tf.cast(self.trainable_channels, dtype=tf.float32)), 0)
-        new_pruned_weights = (1 - new_pruned) * self._kernel1
-        self._kernel2 += new_pruned_weights
-        self.trainable_channels *= tf.cast(t, dtype=tf.uint8)
+	def prune_kernel(self, to_be_pruned):
+		"""
+		Prune the network layer on specific weights.
+		Parameters
+		---------------
+		to_be_pruned: NumPy Array or Tensor of shape=kernel.shape with values in {0,  1} indicating which weights
+		to keep (1) and which to drop (0).
+		"""
+		t = tensorflow.cast(to_be_pruned, dtype=self.dtype)
+		new_pruned = 1 - tensorflow.maximum((1 - t) - (1 - self.trainable_channels), 0)
+		new_pruned_weights = (1 - new_pruned) * self._kernel1
+		self._kernel2 += new_pruned_weights
+		self.trainable_channels *= t
 
-    def prune_recurrent_kernel(self, to_be_pruned):
-        """
-        Prune the network layer on specific weights.
-        Parameters
-        ---------------
-        to_be_pruned: NumPy Array or Tensor of shape=kernel.shape with values in {0,  1} indicating which weights
-        to keep (1) and which to drop (0).
-        """
-        t = tf.cast(to_be_pruned, dtype=tf.float32)
-        new_pruned = 1 - tf.maximum((1 - t) - (1 - tf.cast(self.trainable_recurrent_channels, dtype=tf.float32)), 0)
-        new_pruned_weights = (1 - new_pruned) * self._kernel1
-        self._recurrent_kernel2 += new_pruned_weights
-        self.trainable_recurrent_channels *= tf.cast(t, dtype=tf.uint8)
+	def prune_recurrent_kernel(self, to_be_pruned):
+		"""
+		Prune the network recurrent layer on specific weights.
+		Parameters
+		---------------
+		to_be_pruned: NumPy Array or Tensor of shape=kernel.shape with values in {0,  1} indicating which weights
+		to keep (1) and which to drop (0).
+		"""
+		t = tensorflow.cast(to_be_pruned, dtype=self.dtype)
+		new_pruned = 1 - tensorflow.maximum((1 - t) - (1 - self.trainable_recurrent_channels), 0)
+		new_pruned_weights = (1 - new_pruned) * self._kernel1
+		self._recurrent_kernel2 += new_pruned_weights
+		self.trainable_recurrent_channels *= t
 
-    def prune_bias(self, to_be_pruned):
-        """
-        Prune the bias on specific weights.
-        Parameters
-        --------------
-        to_be_pruned: NumPy Array or Tensor with shape=kernel.shape with values in {0,  1} indicating which weights to keep (1) and which to drop (0).
-        """
-        assert (self.use_bias)
-        t = tf.cast(to_be_pruned, dtype=tf.float32)
-        new_pruned = 1 - tf.maximum((1 - t) - (1 - tf.cast(self.trainable_bias, dtype=tf.float32)), 0)
-        new_pruned_bias = (1 - new_pruned) * self._bias1
-        self._bias2 += new_pruned_bias
-        self.trainable_bias *= tf.cast(t, dtype=tf.uint8)
+	def prune_bias(self, to_be_pruned):
+		"""
+		Prune the bias on specific weights.
+		Parameters
+		--------------
+		to_be_pruned: NumPy Array or Tensor with shape=kernel.shape with values in {0,  1} indicating which weights to keep (1) and which to drop (0).
+		"""
+		assert (self.use_bias)
+		t = tensorflow.cast(to_be_pruned, dtype=self.dtype)
+		new_pruned = 1 - tensorflow.maximum((1 - t) - (1 - self.trainable_bias), 0)
+		new_pruned_bias = (1 - new_pruned) * self._bias1
+		self._bias2 += new_pruned_bias
+		self.trainable_bias *= t
 
 class CustomLSTM(layers.LSTM):
 	def __init__(self, *args, **kwargs):
