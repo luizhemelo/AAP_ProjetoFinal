@@ -9,7 +9,7 @@ from matplotlib import pyplot
 from matplotlib import ticker
 from sklearn import model_selection
 from tensorflow.keras import preprocessing, utils
-from transformer import Encoder, Decoder, BahdanauAttention
+from transformer_example import Encoder, Decoder, BahdanauAttention
 from tensorflow import losses, optimizers, initializers, train
 
 try:
