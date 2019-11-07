@@ -46,56 +46,27 @@ loss, accuracy = nn.evaluate(x_test, y_test, verbose=0)
 print("Loss:", loss)
 print("Accuracy:", accuracy)
 
-#Creating list of weights, saving weight value and index
-#TODO optimize?
-l = []
-for i in range(len(nn.layers)):
-	t1, t2 = nn.layers[i].kernel, nn.layers[i].bias
-	for j in range(t1.shape[0]):
-		for k in range(t1[j].shape[0]):
-			l.append((t1[j][k].numpy(), i, j, k))
-	for j in range(t2.shape[0]):
-		l.append((t2[j].numpy(), i, j))
+#Creating tensor of weights
+l1, l2 = [], []
+for layer in nn.layers:
+	l1.append(tensorflow.reshape(layer.kernel, (-1,)))
+	l1.append(tensorflow.reshape(layer.bias, (-1,)))
+	l2.append(tensorflow.reshape(layer.trainable_channels, (-1,)))
+	l2.append(tensorflow.reshape(layer.trainable_bias, (-1,)))
 
-#Sorting weights for pruning
-#TODO change p to p**(1/n)
-s = sorted(l, key=lambda x: x[0])
-del l
+#Sorting and getting threshold
+s = tensorflow.sort(tensorflow.concat(l1, axis=-1))[tensorflow.concat(l2, axis=-1) == 1]
 p = int(numpy.floor((9. / 10.) * len(s)))
-s = s[:p]
+threshold = s[p].numpy()
 
-#Creating dictionaries for separating weights and bias by layer
-to_prune_dict_kernel, to_prune_dict_bias = {}, {}
-for i in range(len(nn.layers)):
-	to_prune_dict_kernel[i] = []
-	to_prune_dict_bias[i] = []
-for i in s:
-	if len(i) > 3:
-		to_prune_dict_kernel[i[1]].append(i[2:])
-	else:
-		to_prune_dict_bias[i[1]].append(i[2])
-del s
-
-#Creating pruning Tensor for pruning weights and pruning each layer
-for i in to_prune_dict_kernel.keys():
-	if not to_prune_dict_kernel[i]:
-		continue
-	v = tensorflow.Variable(tensorflow.ones(nn.layers[i].kernel.shape))
-	u = tensorflow.Variable(tensorflow.zeros(len(to_prune_dict_kernel[i])))
-	t = tensorflow.tensor_scatter_nd_update(v, to_prune_dict_kernel[i], u)
-	if tensorflow.math.reduce_any(t == 0):
-		nn.layers[i].prune_kernel(t)
-
-#Creating pruning Tensor for bias and pruning each layer
-for i in to_prune_dict_bias.keys():
-	if not to_prune_dict_bias[i]:
-		continue
-	v = tensorflow.Variable(tensorflow.ones(nn.layers[i].bias.shape))
-	u = tensorflow.Variable(tensorflow.zeros(len(to_prune_dict_bias[i])))
-	t = tensorflow.tensor_scatter_nd_update(v, to_prune_dict_bias[i], u)
-	if tensorflow.math.reduce_any(t == 0):
-		nn.layers[i].prune_bias(t)
-del to_prune_dict_bias, to_prune_dict_kernel
+#Pruning each layer kernel and bias
+for layer in nn.layers:
+	indices_kernel = tensorflow.where(layer.kernel < threshold)
+	indices_bias = tensorflow.where(layer.bias < threshold)
+	t1 = tensorflow.tensor_scatter_nd_update(tensorflow.ones(layer.kernel.shape), indices_kernel, tensorflow.zeros(len(indices_kernel)))
+	t2 = tensorflow.tensor_scatter_nd_update(tensorflow.ones(layer.bias.shape), indices_bias, tensorflow.zeros(len(indices_bias)))
+	layer.prune_kernel(t1)
+	layer.prune_bias(t2)
 
 #Restoring initial values
 for i in nn.layers:
