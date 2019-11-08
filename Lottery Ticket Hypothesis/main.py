@@ -55,7 +55,7 @@ for layer in nn.layers:
 	l2.append(tensorflow.reshape(layer.trainable_bias, (-1,)))
 
 #Sorting and getting threshold
-s = tensorflow.sort(tensorflow.concat(l1, axis=-1))[tensorflow.concat(l2, axis=-1) == 1]
+s = tensorflow.sort(tensorflow.concat(l1, axis=-1)[tensorflow.concat(l2, axis=-1) == 1])
 p = int(numpy.floor((9. / 10.) * len(s)))
 threshold = s[p].numpy()
 
