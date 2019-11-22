@@ -40,7 +40,7 @@ class Encoder(layers.Layer):
 		
 	def __call__(self, X, H):
 		output, state = self.recurrent_layer(X, initial_state=H)
-		return output, state, H
+		return output, state
 
 class Decoder(layers.Layer):
 	def __init__(self, vocabulary_size, embedding_dimensions, decoding_units, recurrent_layer, batch_size, **kwargs):
@@ -64,3 +64,20 @@ class Decoder(layers.Layer):
 			output, state = self.recurrent_layer(c)
 			output = tensorflow.reshape(output, (-1, output.shape[2]))
 			return c, state, attention
+
+class Transformer(models.Sequential):
+	def __init__(self, vocabulary_input_size, vocabulary_target_size, embedding_dimensions, encoding_units, decoding_units, attention_units, recurrent_layer, batch_size, target_language, **kwargs):
+		super(Transformer, self).__init__(**kwargs)
+		self.encoder = Encoder(vocabulary_input_size, embedding_dimensions, encoding_units, batch_size, recurrent_layer)
+		self.decoder = Decoder(vocabulary_target_size, embedding_dimensions, decoding_units, recurrent_layer, batch_size)
+		self.attention = BahdanauAttention(attention_units)
+		self.hidden_state = tensorflow.zeros((batch_size, encoding_units))
+		self.target_language = target_language
+
+	def __call__(self, X):
+		encoding, encoding_hidden_state = self.encoder(X, self.hidden_state)
+		decoding_hidden_state = encoding_hidden_state
+		decoder_input = tensorflow.expand_dims([self.target_language.word_index["<start>"]] * self.batch_size, 1)
+		predictions, decoding_hidden_state = self.decoder(decoder_input, encoding, decoding_hidden_state)
+		self.hidden_state = decoding_hidden_state
+		return predictions
