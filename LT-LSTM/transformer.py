@@ -1,4 +1,5 @@
 import tensorflow
+import prunable_layers
 from tensorflow import initializers
 from tensorflow.keras import models, layers
 
@@ -8,67 +9,75 @@ try:
 except:
 	print("Failed on enabling dynamic memory allocation on GPU devices!")
 
-class Encoder(models.Model):
-	def __init__(self, vocab_size, embedding_dim, enc_units, batch_sz):
-		super(Encoder, self).__init__()
-		self.batch_sz = batch_sz
-		self.enc_units = enc_units
-		self.embedding = layers.Embedding(vocab_size, embedding_dim)
-		self.gru = layers.GRU(self.enc_units, return_sequences=True, return_state=True, recurrent_initializer=initializers.GlorotUniform())
+class BahdanauAttention(layers.Layer):
+	def __init__(self, units, **kwargs):
+		super(BahdanauAttention, self).__init__(**kwargs)
+		self.W1 = prunable_layers.PrunableDense(units)
+		self.W2 = prunable_layers.PrunableDense(units)
+		self.V = prunable_layers.PrunableDense(1)
 
-	def call(self, x, hidden):
-		x = self.embedding(x)
-		output, state = self.gru(x, initial_state=hidden)
+	def __call__(self, query, values):
+		H_with_time_axis = tensorflow.expand_dims(query, 1)
+		score = self.V(tensorflow.math.tanh(self.W1(values) + self.W2(hidden_with_time_axis)))
+		attention_W = tensorflow.math.softmax(score, axis=1)
+		context_tensor = tensorflow.math.reduce_sum(attention_W * values, axis=1)
+		return context_tensor, attention_W
+
+
+class Encoder(layers.Layer):
+	def __init__(self, vocabulary_size, embedding_dimensions, encoding_units, batch_size, recurrent_layer, **kwargs):
+		super(Encoder, self).__init__(**kwargs)
+		self.vocabulary_size = vocabulary_size
+		self.batch_size = batch_size
+		self.encoding_units = encoding_units
+		self.embedding_dimensions = embedding_dimensions
+		self.recurrent_layer = recurrent_layer
+		self.embedding = None
+		self.initial_state = None
+
+	def build(self, input_shape):
+		self.embedding = layers.Embedding(self.vocabulary_size, self.embedding_dimensions)
+		
+	def __call__(self, X, H):
+		output, state = self.recurrent_layer(X, initial_state=H)
 		return output, state
 
-	def initialize_hidden_state(self):
-		return tensorflow.zeros((self.batch_sz, self.enc_units))
+class Decoder(layers.Layer):
+	def __init__(self, vocabulary_size, embedding_dimensions, decoding_units, recurrent_layer, batch_size, **kwargs):
+		super(Decoder, self).__init__(**kwargs)
+		self.batch_size = batch_size
+		self.decoding_units = decoding_units
+		self.vocabulary_size = vocabulary_size
+		self.embedding_dimensions = embedding_dimensions
+		self.recurrent_layer = recurrent_layer
+		self.embedding = None
+		self.attention = None
 
-class Decoder(models.Model):
-	def __init__(self, vocab_size, embedding_dim, dec_units, batch_sz):
-		super(Decoder, self).__init__()
-		self.batch_sz = batch_sz
-		self.dec_units = dec_units
-		self.embedding = layers.Embedding(vocab_size, embedding_dim)
-		self.gru = layers.GRU(self.dec_units, return_sequences=True, return_state=True, recurrent_initializer=initializers.GlorotUniform())
-		self.fc = layers.Dense(vocab_size)
-		# used for attention
-		self.attention = BahdanauAttention(self.dec_units)
+		def build(self, input_shape):
+			self.embedding = layers.Embedding(self.vocabulary_size, self.embedding_dimensions)
+			self.attention = BahdanauAttention(self.decoding_units)
 
-	def call(self, x, hidden, enc_output):
-		# enc_output shape == (batch_size, max_length, hidden_size)
-		context_vector, attention_weights = self.attention(hidden, enc_output)
-		# x shape after passing through embedding == (batch_size, 1, embedding_dim)
-		x = self.embedding(x)
-		# x shape after concatenation == (batch_size, 1, embedding_dim + hidden_size)
-		x = tensorflow.concat([tensorflow.expand_dims(context_vector, 1), x], axis=-1)
-		# passing the concatenated vector to the GRU
-		output, state = self.gru(x)
-		# output shape == (batch_size * 1, hidden_size)
-		output = tensorflow.reshape(output, (-1, output.shape[2]))
-		# output shape == (batch_size, vocab)
-		x = self.fc(output)
-		return x, state, attention_weights
+		def __call__(self, X, E, H):
+			context_tensor, attention = self.attention(H, E)
+			x = self.embedding(X)
+			c = tensorflow.concat([tensorflow.expend_dims(context_tensor, 1), x], axis=-1)
+			output, state = self.recurrent_layer(c)
+			output = tensorflow.reshape(output, (-1, output.shape[2]))
+			return c, state, attention
 
-class BahdanauAttention(layers.Layer):
-	def __init__(self, units):
-		super(BahdanauAttention, self).__init__()
-		self.W1 = layers.Dense(units)
-		self.W2 = layers.Dense(units)
-		self.V = layers.Dense(1)
+class Transformer(models.Sequential):
+	def __init__(self, vocabulary_input_size, vocabulary_target_size, embedding_dimensions, encoding_units, decoding_units, attention_units, recurrent_layer, batch_size, target_language, **kwargs):
+		super(Transformer, self).__init__(**kwargs)
+		self.encoder = Encoder(vocabulary_input_size, embedding_dimensions, encoding_units, batch_size, recurrent_layer)
+		self.decoder = Decoder(vocabulary_target_size, embedding_dimensions, decoding_units, recurrent_layer, batch_size)
+		self.attention = BahdanauAttention(attention_units)
+		self.hidden_state = tensorflow.zeros((batch_size, encoding_units))
+		self.target_language = target_language
 
-	def call(self, query, values):
-		# hidden shape == (batch_size, hidden size)
-		# hidden_with_time_axis shape == (batch_size, 1, hidden size)
-		# we are doing this to perform addition to calculate the score
-		hidden_with_time_axis = tensorflow.expand_dims(query, 1)
-		# score shape == (batch_size, max_length, 1)
-		# we get 1 at the last axis because we are applying score to self.V
-		# the shape of the tensor before applying self.V is (batch_size, max_length, units)
-		score = self.V(tensorflow.math.tanh(self.W1(values) + self.W2(hidden_with_time_axis)))
-		# attention_weights shape == (batch_size, max_length, 1)
-		attention_weights = tensorflow.math.softmax(score, axis=1)
-		# context_vector shape after sum == (batch_size, hidden_size)
-		context_vector = attention_weights * values
-		context_vector = tensorflow.reduce_sum(context_vector, axis=1)
-		return context_vector, attention_weights    
+	def __call__(self, X):
+		encoding, encoding_hidden_state = self.encoder(X, self.hidden_state)
+		decoding_hidden_state = encoding_hidden_state
+		decoder_input = tensorflow.expand_dims([self.target_language.word_index["<start>"]] * self.batch_size, 1)
+		predictions, decoding_hidden_state = self.decoder(decoder_input, encoding, decoding_hidden_state)
+		self.hidden_state = decoding_hidden_state
+		return predictions
