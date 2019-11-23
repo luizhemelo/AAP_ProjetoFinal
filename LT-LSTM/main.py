@@ -9,7 +9,7 @@ from matplotlib import pyplot
 from matplotlib import ticker
 from sklearn import model_selection
 from tensorflow.keras import preprocessing, utils
-from transformer_example import Encoder, Decoder, BahdanauAttention
+from transformer_example_prunable import Encoder, Decoder, BahdanauAttention
 from tensorflow import losses, optimizers, initializers, train
 
 try:
@@ -144,7 +144,7 @@ checkpoint_dir = "./training_checkpoints"
 checkpoint_prefix = os.path.join(checkpoint_dir, "ckpt")
 checkpoint = train.Checkpoint(optimizer=optimizer,encoder=encoder,decoder=decoder)
 
-@tensorflow.function
+#@tensorflow.function
 def train_step(inp, targ, enc_hidden):
 	loss = 0
 	with tensorflow.GradientTape() as tape:
