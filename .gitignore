@@ -6,8 +6,11 @@ __pycache__/
 # C extensions
 *.so
 
-# Tensorboard callback logs
+# TensorBoard callback logs
 .logs/
+
+# TensorFlow checkpoints
+training_checkpoints/
 
 # Distribution / packaging
 .Python
