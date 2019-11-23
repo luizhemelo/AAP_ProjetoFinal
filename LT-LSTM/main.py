@@ -42,9 +42,9 @@ print(preprocess_sentence(pt_sentence).encode("utf-8"))
 # 2. Clean the sentences
 # 3. Return word pairs in the format: [ENGLISH, SPANISH]
 def create_dataset(path, num_examples):
-		lines = io.open(path, encoding="UTF-8").read().strip().split('\n')
-		word_pairs = [[preprocess_sentence(w) for w in l.split('\t')]  for l in lines[:num_examples]]
-		return zip(*word_pairs)
+	lines = io.open(path, encoding="UTF-8").read().strip().split('\n')
+	word_pairs = [[preprocess_sentence(w) for w in l.split('\t')]  for l in lines[:num_examples]]
+	return zip(*word_pairs)
 
 path_to_zip = utils.get_file("spa-eng.zip", origin="http://storage.googleapis.com/download.tensorflow.org/data/spa-eng.zip", extract=True)
 
