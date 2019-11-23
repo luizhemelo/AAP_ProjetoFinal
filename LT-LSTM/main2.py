@@ -125,12 +125,12 @@ vocab_tar_size = len(targ_lang.word_index) + 1
 
 
 # %%
-t = transformer.Transformer(vocab_inp_size, vocab_tar_size, embedding_dim, units, units, 10, layers.GRU(units), batch_size, targ_lang)
-
+t = transformer.Transformer(vocab_inp_size, vocab_tar_size, embedding_dim, units, units, 10, batch_size, targ_lang)
 
 # %%
 def loss_function(real, pred):
 	mask = tensorflow.math.logical_not(tensorflow.math.equal(real, 0))
+	loss_object = losses.SparseCategoricalCrossentropy(from_logits=True, reduction="none")
 	loss_ = loss_object(real, pred)
 	mask = tensorflow.cast(mask, dtype=loss_.dtype)
 	loss_ *= mask
@@ -143,7 +143,7 @@ t.compile(loss=loss_function, optimizer=optimizers.Adam(learning_rate=0.001), me
 
 
 # %%
-t.fit(input_tensor_train, target_tensor_train, batch_size=64)
+t.fit(tensorflow.cast(tensorflow.expand_dims(input_tensor_train, 0), tensorflow.float32), tensorflow.cast(tensorflow.expand_dims(target_tensor_train, 0), tensorflow.float32), batch_size=64)
 
 
 # %%
