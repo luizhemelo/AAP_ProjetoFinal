@@ -65,7 +65,7 @@ class Decoder(layers.Layer):
 			output = tensorflow.reshape(output, (-1, output.shape[2]))
 			return c, state, attention
 
-class Transformer(models.Sequential):
+class Transformer(models.Model):
 	def __init__(self, vocabulary_input_size, vocabulary_target_size, embedding_dimensions, encoding_units, decoding_units, attention_units, recurrent_layer, batch_size, target_language, **kwargs):
 		super(Transformer, self).__init__(**kwargs)
 		self.encoder = Encoder(vocabulary_input_size, embedding_dimensions, encoding_units, batch_size, recurrent_layer)
@@ -77,7 +77,8 @@ class Transformer(models.Sequential):
 	def __call__(self, X):
 		encoding, encoding_hidden_state = self.encoder(X, self.hidden_state)
 		decoding_hidden_state = encoding_hidden_state
-		decoder_input = tensorflow.expand_dims([self.target_language.word_index["<start>"]] * self.batch_size, 1)
+		decoder_input = self.target_language.word_index["<start>"] * self.batch.batch_size
+		#decoder_input = tensorflow.expand_dims([] * self.batch_size, 1)
 		predictions, decoding_hidden_state = self.decoder(decoder_input, encoding, decoding_hidden_state)
 		self.hidden_state = decoding_hidden_state
 		return predictions
