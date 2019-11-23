@@ -56,7 +56,7 @@ print(en[-1])
 print(sp[-1])
 
 def max_length(tensor):
-		return max(len(t) for t in tensor)
+	return max(len(t) for t in tensor)
 
 def tokenize(lang):
 	lang_tokenizer = preprocessing.text.Tokenizer(filters='')
@@ -66,11 +66,11 @@ def tokenize(lang):
 	return tensor, lang_tokenizer
 
 def load_dataset(path, num_examples=None):
-		# creating cleaned input, output pairs
-		targ_lang, inp_lang = create_dataset(path, num_examples)
-		input_tensor, inp_lang_tokenizer = tokenize(inp_lang)
-		target_tensor, targ_lang_tokenizer = tokenize(targ_lang)
-		return input_tensor, target_tensor, inp_lang_tokenizer, targ_lang_tokenizer
+	# creating cleaned input, output pairs
+	targ_lang, inp_lang = create_dataset(path, num_examples)
+	input_tensor, inp_lang_tokenizer = tokenize(inp_lang)
+	target_tensor, targ_lang_tokenizer = tokenize(targ_lang)
+	return input_tensor, target_tensor, inp_lang_tokenizer, targ_lang_tokenizer
 
 #numero de sentencas que serao usadas
 num_examples = 30000
@@ -213,22 +213,22 @@ def evaluate(sentence):
 
 # function for plotting the attention weights
 def plot_attention(attention, sentence, predicted_sentence):
-		figure = pyplot.figure(figsize=(10,10))
-		axis = figure.add_subplot(1, 1, 1)
-		axis.matshow(attention, cmap="viridis")
-		fontdict = {"fontsize": 14}
-		axis.set_xticklabels([''] + sentence, fontdict=fontdict, rotation=90)
-		axis.set_yticklabels([''] + predicted_sentence, fontdict=fontdict)
-		axis.xaxis.set_major_locator(ticker.MultipleLocator(1))
-		axis.yaxis.set_major_locator(ticker.MultipleLocator(1))
-		pyplot.show()
+	figure = pyplot.figure(figsize=(10,10))
+	axis = figure.add_subplot(1, 1, 1)
+	axis.matshow(attention, cmap="viridis")
+	fontdict = {"fontsize": 14}
+	axis.set_xticklabels([''] + sentence, fontdict=fontdict, rotation=90)
+	axis.set_yticklabels([''] + predicted_sentence, fontdict=fontdict)
+	axis.xaxis.set_major_locator(ticker.MultipleLocator(1))
+	axis.yaxis.set_major_locator(ticker.MultipleLocator(1))
+	pyplot.show()
 
 def translate(sentence):
-		result, sentence, attention_plot = evaluate(sentence)
-		print("Input: %s" % (sentence))
-		print("Predicted translation: {}".format(result))
-		attention_plot = attention_plot[:len(result.split(' ')), :len(sentence.split(' '))]
-		plot_attention(attention_plot, sentence.split(' '), result.split(' '))
+	result, sentence, attention_plot = evaluate(sentence)
+	print("Input: %s" % (sentence))
+	print("Predicted translation: {}".format(result))
+	attention_plot = attention_plot[:len(result.split(' ')), :len(sentence.split(' '))]
+	plot_attention(attention_plot, sentence.split(' '), result.split(' '))
 
 translate(u"hace mucho frio aqui.")
 translate(u"esta es mi vida.")
