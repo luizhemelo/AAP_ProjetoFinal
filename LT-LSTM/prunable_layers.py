@@ -230,9 +230,9 @@ class PrunableGRUCell(layers.GRUCell):
 		self._kernel1 = self.add_weight("kernel1", shape=(input_shape[-1], 3 * self.units), initializer=self.kernel_initializer, regularizer=self.kernel_regularizer, constraint=self.kernel_constraint, dtype=self.dtype, trainable=True)
 		self._kernel2 = tensorflow.zeros((input_shape[-1], 3 * self.units), dtype=self.dtype)
 		self.trainable_channels = tensorflow.ones((input_shape[-1], 3 * self.units), dtype=self.dtype)
-		self._recurrent_kernel1 = self.add_weight("recurrent_kernel1", shape=(input_shape[-1], 3 * self.units), initializer=self.recurrent_initializer, regularizer=self.recurrent_regularizer, constraint=self.recurrent_constraint, dtype=self.dtype, trainable=True)
-		self._recurrent_kernel2 = tensorflow.zeros((input_shape[-1], 3 * self.units), dtype=self.dtype)
-		self.trainable_recurrent_channels = tensorflow.ones((input_shape[-1], 3 * self.units), dtype=self.dtype)
+		self._recurrent_kernel1 = self.add_weight("recurrent_kernel1", shape=(self.units, 3 * self.units), initializer=self.recurrent_initializer, regularizer=self.recurrent_regularizer, constraint=self.recurrent_constraint, dtype=self.dtype, trainable=True)
+		self._recurrent_kernel2 = tensorflow.zeros((self.units, 3 * self.units), dtype=self.dtype)
+		self.trainable_recurrent_channels = tensorflow.ones((self.units, 3 * self.units), dtype=self.dtype)
 		if self.use_bias:
 			self._bias1 = self.add_weight("bias", shape=(2, 3 * self.units), initializer=self.bias_initializer, regularizer=self.bias_regularizer, constraint=self.bias_constraint, dtype=self.dtype, trainable=True)
 			self._bias2 = tensorflow.zeros((2, 3 * self.units), dtype=self.dtype)
