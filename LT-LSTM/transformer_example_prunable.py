@@ -17,7 +17,7 @@ class Encoder(models.Model):
 		self.embedding = layers.Embedding(vocab_size, embedding_dim)
 		self.gru = prunable_layers.PrunableGRU(self.enc_units, return_sequences=True, return_state=True, recurrent_initializer=initializers.GlorotUniform())
 
-	def call(self, x, hidden):
+	def __call__(self, x, hidden):
 		x = self.embedding(x)
 		output, state = self.gru(x, initial_state=hidden)
 		return output, state
@@ -32,11 +32,11 @@ class Decoder(models.Model):
 		self.dec_units = dec_units
 		self.embedding = layers.Embedding(vocab_size, embedding_dim)
 		self.gru = prunable_layers.PrunableGRU(self.dec_units, return_sequences=True, return_state=True, recurrent_initializer=initializers.GlorotUniform())
-		self.fc = layers.Dense(vocab_size)
+		self.fc = prunable_layers.PrunableDense(vocab_size)
 		# used for attention
 		self.attention = BahdanauAttention(self.dec_units)
 
-	def call(self, x, hidden, enc_output):
+	def __call__(self, x, hidden, enc_output):
 		# enc_output shape == (batch_size, max_length, hidden_size)
 		context_vector, attention_weights = self.attention(hidden, enc_output)
 		# x shape after passing through embedding == (batch_size, 1, embedding_dim)
@@ -58,7 +58,7 @@ class BahdanauAttention(layers.Layer):
 		self.W2 = prunable_layers.PrunableDense(units)
 		self.V = prunable_layers.PrunableDense(1)
 
-	def call(self, query, values):
+	def __call__(self, query, values):
 		# hidden shape == (batch_size, hidden size)
 		# hidden_with_time_axis shape == (batch_size, 1, hidden size)
 		# we are doing this to perform addition to calculate the score
