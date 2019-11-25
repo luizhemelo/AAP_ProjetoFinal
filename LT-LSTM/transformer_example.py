@@ -16,7 +16,7 @@ class Encoder(models.Model):
 		self.embedding = layers.Embedding(vocab_size, embedding_dim)
 		self.gru = layers.GRU(self.enc_units, return_sequences=True, return_state=True, recurrent_initializer=initializers.GlorotUniform())
 
-	def call(self, x, hidden):
+	def __call__(self, x, hidden):
 		x = self.embedding(x)
 		output, state = self.gru(x, initial_state=hidden)
 		return output, state
@@ -35,7 +35,7 @@ class Decoder(models.Model):
 		# used for attention
 		self.attention = BahdanauAttention(self.dec_units)
 
-	def call(self, x, hidden, enc_output):
+	def __call__(self, x, hidden, enc_output):
 		# enc_output shape == (batch_size, max_length, hidden_size)
 		context_vector, attention_weights = self.attention(hidden, enc_output)
 		# x shape after passing through embedding == (batch_size, 1, embedding_dim)
@@ -57,7 +57,7 @@ class BahdanauAttention(layers.Layer):
 		self.W2 = layers.Dense(units)
 		self.V = layers.Dense(1)
 
-	def call(self, query, values):
+	def __call__(self, query, values):
 		# hidden shape == (batch_size, hidden size)
 		# hidden_with_time_axis shape == (batch_size, 1, hidden size)
 		# we are doing this to perform addition to calculate the score
@@ -71,4 +71,4 @@ class BahdanauAttention(layers.Layer):
 		# context_vector shape after sum == (batch_size, hidden_size)
 		context_vector = attention_weights * values
 		context_vector = tensorflow.reduce_sum(context_vector, axis=1)
-		return context_vector, attention_weights    
+		return context_vector, attention_weights
