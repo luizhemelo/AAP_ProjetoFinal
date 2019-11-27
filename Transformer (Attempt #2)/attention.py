@@ -39,7 +39,7 @@ class AttentionLayer(layers.Layer):
 			print('encoder_out_seq>', encoder_out_seq.shape)
 			print('decoder_out_seq>', decoder_out_seq.shape)
 
-		#@tensorflow.function
+		@tensorflow.function
 		def energy_step(inputs, states):
 			""" Step function for computing energy for a single decoder state """
 
@@ -80,7 +80,7 @@ class AttentionLayer(layers.Layer):
 
 			return e_i, states
 
-		#@tensorflow.function
+		@tensorflow.function
 		def context_step(inputs, states):
 			""" Step function for computing ci using ei """
 			# <= batch_size, hidden_size
@@ -114,6 +114,6 @@ class AttentionLayer(layers.Layer):
 	def compute_output_shape(self, input_shape):
 		""" Outputs produced by the layer """
 		return [
-			tensorflow.TensorShape((input_shape[1][0], input_shape[1][1], input_shape[1][2])),
+			tensorflow.TensorShape((input_shape[1][0], input_shape[1][1], input_shape[0][2])),
 			tensorflow.TensorShape((input_shape[1][0], input_shape[1][1], input_shape[0][1]))
 		]
