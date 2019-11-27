@@ -8,6 +8,16 @@ import tensorflow
 from sklearn import model_selection
 from tensorflow.keras import layers, models, preprocessing, utils, optimizers, losses, Input
 
+try:
+	device = tensorflow.config.experimental.list_physical_devices("GPU")[0]
+except:
+	print("No GPU avaliable!")
+else:
+	try:
+		tensorflow.config.experimental.set_memory_growth(device, True)
+	except:
+		print("Could not enable dynamic memory growth to device " + str(device))
+
 def get_logger(mod_name, log_dir):
 	if not os.path.exists(log_dir):
 		os.mkdir(log_dir)

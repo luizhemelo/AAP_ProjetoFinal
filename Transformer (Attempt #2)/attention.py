@@ -10,7 +10,7 @@ else:
 	try:
 		tensorflow.config.experimental.set_memory_growth(device, True)
 	except:
-		print("Could not enable dynamic memory growth to device " + device)
+		print("Could not enable dynamic memory growth to device " + str(device))
 
 class AttentionLayer(layers.Layer):
 	"""

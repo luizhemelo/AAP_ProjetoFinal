@@ -13,7 +13,7 @@ else:
 	try:
 		tensorflow.config.experimental.set_memory_growth(device, True)
 	except:
-		print("Could not enable dynamic memory growth to device " + device)
+		print("Could not enable dynamic memory growth to device " + str(device))
 
 def get_model(hidden_size, batch_size, en_timesteps, en_vsize, fr_timesteps, fr_vsize):
 	# Define an input sequence and process it.

@@ -2,10 +2,14 @@ import tensorflow
 from tensorflow.keras import layers
 
 try:
-	for device in tensorflow.config.experimental.list_physical_devices("GPU"):
-		tensorflow.config.experimental.set_memory_growth(device, True)
+	device = tensorflow.config.experimental.list_physical_devices("GPU")[0]
 except:
-	print("Dynamic allocation mode for GPU device failed!")
+	print("No GPU avaliable!")
+else:
+	try:
+		tensorflow.config.experimental.set_memory_growth(device, True)
+	except:
+		print("Could not enable dynamic memory growth to device " + str(device))
 
 class PrunableDense(layers.Dense):
 	def __init__(self, *args, **kwargs):
