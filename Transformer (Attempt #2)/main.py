@@ -155,31 +155,13 @@ model, encoder, decoder = get_model(hidden_size, batch_size, en_timesteps, en_vs
 model.compile(optimizer=optimizers.Adam(), loss=losses.CategoricalCrossentropy())
 model.summary()
 
-n_epochs = 10
-#train(model, en_seq, fr_seq, batch_size, n_epochs)
 en_onehot_seq = utils.to_categorical(en_seq, num_classes=en_vsize)
 fr_onehot_seq = utils.to_categorical(fr_seq, num_classes=fr_vsize)
 
-l = []
-for i, j in zip(en_onehot_seq, fr_onehot_seq):
-	l.append((i, j))
-#X = [en_onehot_seq, fr_onehot_seq]
-y = fr_onehot_seq
-x_train, x_test, y_train, y_test = model_selection.train_test_split(l, y)
+x_train = [en_onehot_seq, fr_onehot_seq]
+y_train = fr_onehot_seq
 
-x1, x2 = [], []
-for (i, j) in x_train:
-	x1.append(i)
-	x2.append(j)
-x_train = [numpy.array(x1), numpy.array(x2)]
-
-x1.clear()
-x2.clear()
-for (i, j) in x_test:
-	x1.append(i)
-	x2.append(j)
-x_test = [numpy.array(x1), numpy.array(x2)]
-
-model.fit(x_train, y_train, epochs=n_epochs, batch_size=64, validation_data=(x_train, y_train))
-r = model.evaluate(x_test, y_test)
-print(r)
+n_epochs = 10
+history = model.fit(x_train, y_train, epochs=n_epochs, batch_size=64, validation_data=(x_train, y_train))
+#r = model.evaluate(x_test, y_test)
+#print(r)
