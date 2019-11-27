@@ -163,5 +163,19 @@ y_train = fr_onehot_seq
 
 n_epochs = 10
 history = model.fit(x_train, y_train, epochs=n_epochs, batch_size=64, validation_data=(x_train, y_train))
-#r = model.evaluate(x_test, y_test)
-#print(r)
+
+en_tokenizer = preprocessing.text.Tokenizer(oov_token='UNK')
+en_tokenizer.fit_on_texts(ts_en_text)
+
+fr_tokenizer = preprocessing.text.Tokenizer(oov_token='UNK')
+fr_tokenizer.fit_on_texts(ts_fr_text)
+
+fr_index2word = dict(zip(fr_tokenizer.word_index.values(), fr_tokenizer.word_index.keys()))
+
+ts_en_seq, ts_fr_seq = preprocess_data(en_tokenizer, fr_tokenizer, ts_en_text, ts_fr_text, en_timesteps, fr_timesteps)
+en_vsize = max(en_tokenizer.index_word.keys()) + 1
+fr_vsize = max(fr_tokenizer.index_word.keys()) + 1
+
+text, attention_weights = infer_nmt(encoder, decoder, ts_en_seq, en_vsize, fr_vsize, fr_tokenizer, fr_index2word)
+print(ts_fr_text)
+print(text)
