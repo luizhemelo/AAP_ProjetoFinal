@@ -92,24 +92,6 @@ def get_data(logger, project_path, train_size, random_seed=100):
 		numpy.mean([len(fr_sent.split(" ")) for fr_sent in tr_fr_text])))
 	return tr_en_text, tr_fr_text, ts_en_text, ts_fr_text
 
-def train(full_model, en_seq, fr_seq, batch_size, logger, n_epochs=10):
-	""" Training the model """
-
-	for ep in range(n_epochs):
-		losses_list = []
-		for bi in range(0, en_seq.shape[0] - batch_size, batch_size):
-
-			en_onehot_seq = utils.to_categorical(en_seq[bi:bi + batch_size, :], num_classes=en_vsize)
-			fr_onehot_seq = utils.to_categorical(fr_seq[bi:bi + batch_size, :], num_classes=fr_vsize)
-
-			full_model.train_on_batch([en_onehot_seq, fr_onehot_seq[:, :-1, :]], fr_onehot_seq[:, 1:, :])
-
-			l = full_model.evaluate([en_onehot_seq, fr_onehot_seq[:, :-1, :]], fr_onehot_seq[:, 1:, :], batch_size=batch_size, verbose=0)
-
-			losses_list.append(l)
-		if (ep + 1) % 1 == 0:
-			logger.info("Loss in epoch {}: {}".format(ep + 1, numpy.mean(losses_list)))
-
 def infer_nmt(encoder_model, decoder_model, test_en_seq, en_vsize, fr_vsize, fr_tokenizer, fr_index2word):
 	"""
 	Infer logic
